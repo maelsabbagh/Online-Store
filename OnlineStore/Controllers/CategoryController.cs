@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OnlineStore.Data;
+using OnlineStore.Models;
 
 namespace OnlineStore.Controllers
 {
@@ -14,6 +15,18 @@ namespace OnlineStore.Controllers
         {
             var categoriesList = _db.Categories.ToList();
             return View(categoriesList);
+        }
+
+        public IActionResult Create()
+        {
+            return View();
+        }
+        [HttpPost]
+        public IActionResult Create(Category category)
+        {
+            _db.Categories.Add(category);
+            _db.SaveChanges();
+            return RedirectToAction("Index");
         }
     }
 }
