@@ -9,7 +9,7 @@ namespace OnlineStore.Controllers
         private readonly ApplicationDbContext _db;
         public CategoryController(ApplicationDbContext db)
         {
-            _db=db;   
+            _db = db;
         }
         public IActionResult Index()
         {
@@ -32,6 +32,29 @@ namespace OnlineStore.Controllers
             }
 
             return View();
+        }
+
+        public IActionResult Edit(int? id)
+        {
+            if (id == null || id == 0) return NotFound();
+            Category categoryFromDb = _db.Categories.Find(id);
+            if (categoryFromDb == null) return NotFound();
+
+            return View(categoryFromDb);
+        }
+
+        [HttpPost]
+        public IActionResult Edit(Category category)
+        {
+            if(ModelState.IsValid)
+            {
+                _db.Categories.Update(category);
+                _db.SaveChanges();
+                return RedirectToAction("Index");
+            }
+
+            return View();
+
         }
     }
 }
