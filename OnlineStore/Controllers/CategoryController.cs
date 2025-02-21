@@ -28,6 +28,7 @@ namespace OnlineStore.Controllers
             {
                 _db.Categories.Add(category);
                 _db.SaveChanges();
+                TempData["success"] = "category created successfully";
                 return RedirectToAction("Index");
             }
 
@@ -50,6 +51,8 @@ namespace OnlineStore.Controllers
             {
                 _db.Categories.Update(category);
                 _db.SaveChanges();
+                TempData["success"] = "category Edited successfully";
+
                 return RedirectToAction("Index");
             }
 
@@ -75,6 +78,8 @@ namespace OnlineStore.Controllers
             if (category == null) return NotFound();
             _db.Categories.Remove(category);
             _db.SaveChanges();
+            TempData["success"] = "category Deleted successfully";
+
             return RedirectToAction("Index");
 
             
