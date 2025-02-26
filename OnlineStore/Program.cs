@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using OnlineStore.Data;
+//using Store.DataAccess;
+using Store.DataAccess.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
