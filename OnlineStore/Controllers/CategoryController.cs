@@ -1,19 +1,20 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Store.DataAccess.Data;
+using Store.DataAccess.Repository.IRepository;
 using Store.Models;
 
 namespace OnlineStore.Controllers
 {
     public class CategoryController : Controller
     {
-        private readonly ApplicationDbContext _db;
-        public CategoryController(ApplicationDbContext db)
+        private readonly ICategoryRepository _categoryRepo;
+        public CategoryController(ICategoryRepository db)
         {
-            _db = db;
+            _categoryRepo = db;
         }
         public IActionResult Index()
         {
-            var categoriesList = _db.Categories.ToList();
+            var categoriesList = _categoryRepo.GetAll();
             return View(categoriesList);
         }
 
@@ -26,8 +27,8 @@ namespace OnlineStore.Controllers
         {
             if (ModelState.IsValid)
             {
-                _db.Categories.Add(category);
-                _db.SaveChanges();
+                _categoryRepo.Add(category);
+                _categoryRepo.Save();
                 TempData["success"] = "category created successfully";
                 return RedirectToAction("Index");
             }
@@ -38,7 +39,7 @@ namespace OnlineStore.Controllers
         public IActionResult Edit(int? id)
         {
             if (id == null || id == 0) return NotFound();
-            Category categoryFromDb = _db.Categories.Find(id);
+            Category categoryFromDb = _categoryRepo.Get(c => c.Id == id);
             if (categoryFromDb == null) return NotFound();
 
             return View(categoryFromDb);
@@ -49,8 +50,8 @@ namespace OnlineStore.Controllers
         {
             if (ModelState.IsValid)
             {
-                _db.Categories.Update(category);
-                _db.SaveChanges();
+                _categoryRepo.Update(category);
+                _categoryRepo.Save();
                 TempData["success"] = "category Edited successfully";
 
                 return RedirectToAction("Index");
@@ -63,7 +64,7 @@ namespace OnlineStore.Controllers
         public IActionResult Delete(int? id)
         {
             if (id == null || id == 0) return NotFound();
-            Category? category = _db.Categories.Find(id);
+            Category? category = _categoryRepo.Get(c => c.Id == id);
             if (category == null) return NotFound();
 
 
@@ -74,10 +75,10 @@ namespace OnlineStore.Controllers
         public IActionResult DeletePost(int? id)
         {
 
-            Category? category=_db.Categories.Find(id);
+            Category? category=_categoryRepo.Get(c => c.Id == id);
             if (category == null) return NotFound();
-            _db.Categories.Remove(category);
-            _db.SaveChanges();
+            _categoryRepo.Remove(category);
+            _categoryRepo.Save();
             TempData["success"] = "category Deleted successfully";
 
             return RedirectToAction("Index");
