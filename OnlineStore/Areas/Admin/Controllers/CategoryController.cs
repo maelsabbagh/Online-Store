@@ -3,8 +3,9 @@ using Store.DataAccess.Data;
 using Store.DataAccess.Repository.IRepository;
 using Store.Models;
 
-namespace OnlineStore.Controllers
+namespace OnlineStore.Areas.Admin.Controllers
 {
+    [Area("Admin")]
     public class CategoryController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;

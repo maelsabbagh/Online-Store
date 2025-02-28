@@ -2,7 +2,9 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Store.Models;
 
-namespace OnlineStore.Controllers;
+namespace OnlineStore.Areas.Customer.Controllers;
+
+[Area("Customer")]
 
 public class HomeController : Controller
 {
