@@ -1,6 +1,5 @@
 ﻿using Store.DataAccess.Data;
 using Store.DataAccess.Repository.IRepository;
-using Store.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,17 +8,20 @@ using System.Threading.Tasks;
 
 namespace Store.DataAccess.Repository
 {
-    public class CategoryRepository : Repository<Category>, ICategoryRepository 
+    public class UnitOfWork : IUnitOfWork
     {
-        private readonly ApplicationDbContext _db;
-        public CategoryRepository(ApplicationDbContext dbContext) : base(dbContext)
-        {
-            _db = dbContext;
-        }
 
-        public void Update(Category category)
+        public ICategoryRepository Category { get; private set; }
+
+        private readonly ApplicationDbContext _db;
+        public UnitOfWork(ApplicationDbContext db)
         {
-            _db.Categories.Update(category);
+            _db = db;
+            Category = new CategoryRepository(_db);
+        }
+        public void Save()
+        {
+            _db.SaveChanges();
         }
     }
 }
