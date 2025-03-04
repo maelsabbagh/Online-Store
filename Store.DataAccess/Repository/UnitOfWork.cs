@@ -13,7 +13,7 @@ namespace Store.DataAccess.Repository
 
         public ICategoryRepository Category { get; private set; }
 
-        public IProductRepository Product { get; set; }
+        public IProductRepository Product { get; private set; }
 
         private readonly ApplicationDbContext _db;
         public UnitOfWork(ApplicationDbContext db)
