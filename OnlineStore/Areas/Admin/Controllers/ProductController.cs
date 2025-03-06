@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Store.DataAccess.Repository.IRepository;
 using Store.Models;
+using Store.Models.ViewModels;
 
 namespace OnlineStore.Areas.Admin.Controllers
 {
@@ -28,21 +29,36 @@ namespace OnlineStore.Areas.Admin.Controllers
                     Text = u.Name,
                     Value = u.Id.ToString()
                 });
-            ViewBag.categoryList = categories;
-            return View();
+            //ViewBag.categoryList = categories;
+            ProductVM productVm = new()
+            {
+                CategoryList = categories,
+                Product = new Product()
+            };
+            return View(productVm);
         }
 
         [HttpPost]
-        public IActionResult Create(Product product)
+        public IActionResult Create(ProductVM productVM)
         {
             if (ModelState.IsValid)
             {
-                _unitOfWork.Product.Add(product);
+                _unitOfWork.Product.Add(productVM.Product);
                 _unitOfWork.Save();
                 TempData["success"] = "product created successfully";
                 return RedirectToAction("Index");
             }
-            return View();
+            else
+            {
+                productVM.CategoryList= _unitOfWork.Category.GetAll()
+                .Select(u => new SelectListItem
+                {
+                    Text = u.Name,
+                    Value = u.Id.ToString()
+                });
+                return View(productVM);
+            }
+               
         }
 
         public IActionResult Edit(int? id)
