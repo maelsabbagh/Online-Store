@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Store.DataAccess.Repository.IRepository;
 using Store.Models;
 
@@ -15,11 +16,19 @@ namespace OnlineStore.Areas.Admin.Controllers
         public IActionResult Index()
         {
             var productList = _unitOfWork.Product.GetAll();
+            
             return View(productList);
         }
 
         public IActionResult Create()
         {
+            IEnumerable<SelectListItem> categories = _unitOfWork.Category.GetAll()
+                .Select(u => new SelectListItem
+                {
+                    Text = u.Name,
+                    Value = u.Id.ToString()
+                });
+            ViewBag.categoryList = categories;
             return View();
         }
 
