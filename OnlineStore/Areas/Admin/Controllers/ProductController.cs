@@ -20,26 +20,37 @@ namespace OnlineStore.Areas.Admin.Controllers
             
             return View(productList);
         }
-
-        public IActionResult Create()
+        //update/insert
+        public IActionResult Upsert(int? id)
         {
-            IEnumerable<SelectListItem> categories = _unitOfWork.Category.GetAll()
-                .Select(u => new SelectListItem
-                {
-                    Text = u.Name,
-                    Value = u.Id.ToString()
-                });
-            //ViewBag.categoryList = categories;
-            ProductVM productVm = new()
+            ProductVM productVM = new()
             {
-                CategoryList = categories,
+                CategoryList = _unitOfWork.Category.GetAll()
+                .Select(c => new SelectListItem
+                {
+                    Text = c.Name,
+                    Value = c.Id.ToString()
+                }),
                 Product = new Product()
+
             };
-            return View(productVm);
+           
+            
+            if(id==null || id==0) // create
+            {
+
+                return View(productVM);
+            }
+            else // update
+            {
+                productVM.Product = _unitOfWork.Product.Get(p=>p.Id==id);
+            }
+            return View(productVM);
         }
+        
 
         [HttpPost]
-        public IActionResult Create(ProductVM productVM)
+        public IActionResult Upsert(ProductVM productVM,IFormFile? file)
         {
             if (ModelState.IsValid)
             {
@@ -61,28 +72,28 @@ namespace OnlineStore.Areas.Admin.Controllers
                
         }
 
-        public IActionResult Edit(int? id)
-        {
-            if (id == 0 || id == null) return NotFound();
-            Product product = _unitOfWork.Product.Get(p => p.Id == id);
+        //public IActionResult Edit(int? id)
+        //{
+        //    if (id == 0 || id == null) return NotFound();
+        //    Product product = _unitOfWork.Product.Get(p => p.Id == id);
 
-            if (product == null) return NotFound();
+        //    if (product == null) return NotFound();
 
-            return View(product);
-        }
-        [HttpPost]
-        public IActionResult Edit(Product product)
-        {
-            if(ModelState.IsValid)
-            {
-                _unitOfWork.Product.Update(product);
-                _unitOfWork.Save();
-                TempData["success"] = "product updated Successfully";
-                return RedirectToAction("Index");
-            }
+        //    return View(product);
+        //}
+        //[HttpPost]
+        //public IActionResult Edit(Product product)
+        //{
+        //    if(ModelState.IsValid)
+        //    {
+        //        _unitOfWork.Product.Update(product);
+        //        _unitOfWork.Save();
+        //        TempData["success"] = "product updated Successfully";
+        //        return RedirectToAction("Index");
+        //    }
 
-            return View();
-        }
+        //    return View();
+        //}
 
         public IActionResult Delete(int? id)
         {

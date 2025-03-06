@@ -4,12 +4,13 @@
     <div class="card-header bg-secondary bg-gradient ml-0 py-3">
         <div class="row">
             <div class="col-12 text-center">
-                <h2 class="text-white py-2">Create Product</h2>
+                <h2 class="text-white py-2">@(Model.Product.Id == 0 ?"Create":"Update") Product</h2>
             </div>
         </div>
     </div>
     <div class="card-body p-4">
         <form method="post" class="row" enctype="multipart/form-data">
+            <input asp-for="Product.Id" hidden />
             <div class="border p-3">
                 <div class="form-floating py-2 col-12">
                     <input asp-for="Product.Title" class="form-control border-0 shadow" />
@@ -20,6 +21,7 @@
                     <textarea asp-for="Product.Description" class="form-control border-0 shadow"> </textarea>
                     <label asp-for="Product.Description" class="ms-2"></label>
                     <span asp-validation-for="Product.Description" class="text-danger"></span>
+
                 </div>
                 <div class="form-floating py-2 col-12">
                     <input asp-for="Product.ISBN" class="form-control border-0 shadow" />
@@ -65,7 +67,15 @@
                 </div>
                 <div class="row pt-2">
                     <div class="col-6 col-md-3">
-                        <button type="submit" class="btn btn-primary form-control">Create</button>
+                        @if(Model.Product.Id==0)
+                        {
+                            <button type="submit" class="btn btn-primary form-control">Create</button>
+                        }
+                        else
+                        {
+                             <button type="submit" class="btn btn-primary form-control">Update</button>
+
+                        }
                     </div>
                     <div class="col-6 col-md-3">
                         <a asp-controller="Product" asp-action="Index" class="btn btn-outline-primary border form-control">
@@ -81,6 +91,13 @@
 
 @section Scripts
 {
+    @* <script> *@
+    @*     tinymce.init({ *@
+    @*       selector: 'textarea', *@
+    @*       Plugins:'anchor autolink charmap codesample', *@
+    @*       toolbar:'undo redo| blocks fontfamily fontsize'  *@
+    @*     }); *@
+    @* </script> *@
     @{
         <partial name="_ValidationScriptsPartial.cshtml"></partial>
     }
