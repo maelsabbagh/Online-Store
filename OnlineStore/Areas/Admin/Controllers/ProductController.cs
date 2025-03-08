@@ -18,7 +18,7 @@ namespace OnlineStore.Areas.Admin.Controllers
         }
         public IActionResult Index()
         {
-            var productList = _unitOfWork.Product.GetAll();
+            var productList = _unitOfWork.Product.GetAll(includeProperties:"Category");
             
             return View(productList);
         }
@@ -51,17 +51,38 @@ namespace OnlineStore.Areas.Admin.Controllers
         }
         
 
+        // id present => update
+        // no id present // create
         [HttpPost]
         public IActionResult Upsert(ProductVM productVM,IFormFile? file)
         {
             if (ModelState.IsValid)
             {
                 string wwwRootPath = _webHostEnvironment.WebRootPath;
-                if(file!=null)
+                if(file!=null) // end point received image
                 {
                     string productPath = Path.Combine(wwwRootPath, @"images\product");
                     string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
 
+                    // check if this object has a file already then it is update
+                    // we need to delete the already existed image
+                    // then add the new one
+
+                    string oldImagePath = productVM.Product.ImageUrl;
+                    if(!string.IsNullOrEmpty(oldImagePath)) //  image saved before
+                    {
+                        // we have a new image and an old image
+                        // delete old image
+
+                        var oldImageFullPath = Path.Combine(wwwRootPath, oldImagePath.TrimStart('\\'));
+                        if(System.IO.File.Exists(oldImageFullPath))
+                        {
+                            System.IO.File.Delete(oldImageFullPath);
+                        }
+
+                        
+                    }
+                    // Add a new one
                     using (var fileStream=new FileStream(Path.Combine(productPath,fileName),FileMode.Create))
                     {
                         file.CopyTo(fileStream);
@@ -69,8 +90,15 @@ namespace OnlineStore.Areas.Admin.Controllers
                     productVM.Product.ImageUrl = @"\images\product\" + fileName;
                 }
 
-                _unitOfWork.Product.Add(productVM.Product);
-                _unitOfWork.Save();
+                if (productVM.Product.Id == 0)// add
+                {
+                    _unitOfWork.Product.Add(productVM.Product);
+                } 
+                else // update
+                {
+                    _unitOfWork.Product.Update(productVM.Product);
+                }
+                    _unitOfWork.Save();
                 TempData["success"] = "product created successfully";
                 return RedirectToAction("Index");
             }

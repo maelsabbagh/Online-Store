@@ -33,19 +33,34 @@ namespace Store.DataAccess.Repository
             dbSet.Add(entity);
         }
 
-        public T Get(Expression<Func<T, bool>> filter)
+        public T Get(Expression<Func<T, bool>> filter, string? includeProperties = null)
         {
-            //IQueryable<T> query = dbSet;
-            //query = dbSet.Where(filter);
-            //return query.FirstOrDefault();
-            return dbSet.FirstOrDefault(filter);
+            IQueryable<T> query = dbSet;
+            query = dbSet.Where(filter);
+            if (!string.IsNullOrEmpty(includeProperties)) // include properties exists
+            {
+                foreach (var includeProp in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(includeProp);
+                }
+            }
+            return query.FirstOrDefault();
+            
         }
 
-        public IEnumerable<T> GetAll()
+        public IEnumerable<T> GetAll(string? includeProperties = null)  // inlude properties will be comma separated string
         {
-            //IQueryable<T> query = dbSet;
-            //return query.ToList();
-            return dbSet.ToList();
+            IQueryable<T> query = dbSet;
+
+            if(!string.IsNullOrEmpty(includeProperties)) // include properties exists
+            {
+                foreach(var includeProp in includeProperties.Split(new char[] {','},StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(includeProp);
+                }
+            }
+            return query.ToList();
+            //return dbSet.ToList();
         }
 
         public void Remove(T entity)

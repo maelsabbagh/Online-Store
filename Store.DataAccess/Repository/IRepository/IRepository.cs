@@ -12,10 +12,10 @@ namespace Store.DataAccess.Repository.IRepository
         //T Category
 
         //GetAll
-        IEnumerable<T> GetAll();
+        IEnumerable<T> GetAll(string? includeProperties=null); // include properties will a comma separated string
 
         //Get
-        T Get(Expression<Func<T,bool>>filter);
+        T Get(Expression<Func<T,bool>>filter, string? includeProperties = null);
         //Add
         void Add(T entity);
         //Remove
