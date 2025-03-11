@@ -139,8 +139,7 @@ namespace OnlineStore.Areas.Admin.Controllers
             string oldImagePath = productToBeDeleted.ImageUrl;
             if (!string.IsNullOrEmpty(oldImagePath))
             {
-                // we have a new image and an old image
-                // delete old image
+
                 string wwwRootPath = _webHostEnvironment.WebRootPath;
 
                 var oldImageFullPath = Path.Combine(wwwRootPath, oldImagePath.TrimStart('\\'));
