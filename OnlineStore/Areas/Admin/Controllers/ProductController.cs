@@ -18,8 +18,8 @@ namespace OnlineStore.Areas.Admin.Controllers
         }
         public IActionResult Index()
         {
-            var productList = _unitOfWork.Product.GetAll(includeProperties:"Category");
-            
+            var productList = _unitOfWork.Product.GetAll(includeProperties: "Category");
+
             return View(productList);
         }
         //update/insert
@@ -36,30 +36,30 @@ namespace OnlineStore.Areas.Admin.Controllers
                 Product = new Product()
 
             };
-           
-            
-            if(id==null || id==0) // create
+
+
+            if (id == null || id == 0) // create
             {
 
                 return View(productVM);
             }
             else // update
             {
-                productVM.Product = _unitOfWork.Product.Get(p=>p.Id==id);
+                productVM.Product = _unitOfWork.Product.Get(p => p.Id == id);
             }
             return View(productVM);
         }
-        
+
 
         // id present => update
         // no id present // create
         [HttpPost]
-        public IActionResult Upsert(ProductVM productVM,IFormFile? file)
+        public IActionResult Upsert(ProductVM productVM, IFormFile? file)
         {
             if (ModelState.IsValid)
             {
                 string wwwRootPath = _webHostEnvironment.WebRootPath;
-                if(file!=null) // end point received image
+                if (file != null) // end point received image
                 {
                     string productPath = Path.Combine(wwwRootPath, @"images\product");
                     string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
@@ -69,21 +69,21 @@ namespace OnlineStore.Areas.Admin.Controllers
                     // then add the new one
 
                     string oldImagePath = productVM.Product.ImageUrl;
-                    if(!string.IsNullOrEmpty(oldImagePath)) //  image saved before
+                    if (!string.IsNullOrEmpty(oldImagePath)) //  image saved before
                     {
                         // we have a new image and an old image
                         // delete old image
 
                         var oldImageFullPath = Path.Combine(wwwRootPath, oldImagePath.TrimStart('\\'));
-                        if(System.IO.File.Exists(oldImageFullPath))
+                        if (System.IO.File.Exists(oldImageFullPath))
                         {
                             System.IO.File.Delete(oldImageFullPath);
                         }
 
-                        
+
                     }
                     // Add a new one
-                    using (var fileStream=new FileStream(Path.Combine(productPath,fileName),FileMode.Create))
+                    using (var fileStream = new FileStream(Path.Combine(productPath, fileName), FileMode.Create))
                     {
                         file.CopyTo(fileStream);
                     }
@@ -95,20 +95,20 @@ namespace OnlineStore.Areas.Admin.Controllers
                 {
                     _unitOfWork.Product.Add(productVM.Product);
                     isCreate = true;
-                } 
+                }
                 else // update
                 {
                     _unitOfWork.Product.Update(productVM.Product);
                 }
-                    _unitOfWork.Save();
-                if(isCreate)
-                TempData["success"] = "product created successfully";
+                _unitOfWork.Save();
+                if (isCreate)
+                    TempData["success"] = "product created successfully";
                 else TempData["success"] = "product updated successfully";
                 return RedirectToAction("Index");
             }
             else
             {
-                productVM.CategoryList= _unitOfWork.Category.GetAll()
+                productVM.CategoryList = _unitOfWork.Category.GetAll()
                 .Select(u => new SelectListItem
                 {
                     Text = u.Name,
@@ -116,59 +116,10 @@ namespace OnlineStore.Areas.Admin.Controllers
                 });
                 return View(productVM);
             }
-               
-        }
-
-        //public IActionResult Edit(int? id)
-        //{
-        //    if (id == 0 || id == null) return NotFound();
-        //    Product product = _unitOfWork.Product.Get(p => p.Id == id);
-
-        //    if (product == null) return NotFound();
-
-        //    return View(product);
-        //}
-        //[HttpPost]
-        //public IActionResult Edit(Product product)
-        //{
-        //    if(ModelState.IsValid)
-        //    {
-        //        _unitOfWork.Product.Update(product);
-        //        _unitOfWork.Save();
-        //        TempData["success"] = "product updated Successfully";
-        //        return RedirectToAction("Index");
-        //    }
-
-        //    return View();
-        //}
-
-        public IActionResult Delete(int? id)
-        {
-            if(id==0 || id==null)
-            {
-                return NotFound();
-            }
-
-            Product product = _unitOfWork.Product.Get(p => p.Id == id);
-            if (product == null) return NotFound();
-
-            return View(product);
 
         }
 
-        [HttpPost,ActionName("Delete")]
-        public IActionResult DeletePost(int ?id)
-        {
-            if (id == 0 || id == null) return NotFound();
-
-            Product product = _unitOfWork.Product.Get(p => p.Id == id);
-            if (product == null) return NotFound();
-
-            _unitOfWork.Product.Remove(product);
-            _unitOfWork.Save();
-            TempData["success"] = "product removed successfully";
-            return RedirectToAction("Index");
-        }
+        
         #region API calls
         [HttpGet]
         public IActionResult GetAll()
@@ -176,6 +127,34 @@ namespace OnlineStore.Areas.Admin.Controllers
             var productList = _unitOfWork.Product.GetAll(includeProperties: "Category");
             return Json(new { data = productList });
         }
+
+    //    [HttpDelete]
+        public IActionResult Delete(int id)
+        {
+            var productToBeDeleted = _unitOfWork.Product.Get(p => p.Id == id);
+            if (productToBeDeleted == null)
+            {
+                return Json(new { success = false, message = "Error while deleting" });
+            }
+            string oldImagePath = productToBeDeleted.ImageUrl;
+            if (!string.IsNullOrEmpty(oldImagePath))
+            {
+                // we have a new image and an old image
+                // delete old image
+                string wwwRootPath = _webHostEnvironment.WebRootPath;
+
+                var oldImageFullPath = Path.Combine(wwwRootPath, oldImagePath.TrimStart('\\'));
+                if (System.IO.File.Exists(oldImageFullPath))
+                {
+                    System.IO.File.Delete(oldImageFullPath);
+                }
+                _unitOfWork.Product.Remove(productToBeDeleted);
+                _unitOfWork.Save();
+                return Json(new { success = true, message = "Deleted Successfully" });
+            }
+            else return Json(new { success = false, message = "Error while deleting" });
+        }
         #endregion
+
     }
 }
