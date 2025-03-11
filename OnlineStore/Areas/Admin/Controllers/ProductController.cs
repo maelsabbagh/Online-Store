@@ -89,17 +89,21 @@ namespace OnlineStore.Areas.Admin.Controllers
                     }
                     productVM.Product.ImageUrl = @"\images\product\" + fileName;
                 }
+                bool isCreate = false;
 
                 if (productVM.Product.Id == 0)// add
                 {
                     _unitOfWork.Product.Add(productVM.Product);
+                    isCreate = true;
                 } 
                 else // update
                 {
                     _unitOfWork.Product.Update(productVM.Product);
                 }
                     _unitOfWork.Save();
+                if(isCreate)
                 TempData["success"] = "product created successfully";
+                else TempData["success"] = "product updated successfully";
                 return RedirectToAction("Index");
             }
             else
@@ -165,5 +169,13 @@ namespace OnlineStore.Areas.Admin.Controllers
             TempData["success"] = "product removed successfully";
             return RedirectToAction("Index");
         }
+        #region API calls
+        [HttpGet]
+        public IActionResult GetAll()
+        {
+            var productList = _unitOfWork.Product.GetAll(includeProperties: "Category");
+            return Json(new { data = productList });
+        }
+        #endregion
     }
 }
