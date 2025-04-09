@@ -62,8 +62,8 @@ namespace OnlineStore.Areas.Admin.Controllers
                 }
                 _unitOfWork.Save();
                 if (isCreate)
-                    TempData["success"] = "product created successfully";
-                else TempData["success"] = "product updated successfully";
+                    TempData["success"] = "Company created successfully";
+                else TempData["success"] = "Company updated successfully";
                 return RedirectToAction("Index");
             }
             else

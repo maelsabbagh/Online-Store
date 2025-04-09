@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Store.DataAccess.Repository.IRepository;
 using Store.Models;
 using Store.Utility;
 
@@ -34,6 +35,7 @@ namespace OnlineStore.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<IdentityUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
+        private readonly IUnitOfWork _unitOfWork;
 
         public RegisterModel(
             UserManager<IdentityUser> userManager,
@@ -41,7 +43,8 @@ namespace OnlineStore.Areas.Identity.Pages.Account
             SignInManager<IdentityUser> signInManager,
             ILogger<RegisterModel> logger,
             IEmailSender emailSender,
-            RoleManager<IdentityRole> roleManager)
+            RoleManager<IdentityRole> roleManager,
+            IUnitOfWork unitOfWork)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -50,6 +53,7 @@ namespace OnlineStore.Areas.Identity.Pages.Account
             _logger = logger;
             _emailSender = emailSender;
             _roleManager = roleManager;
+            _unitOfWork = unitOfWork;
         }
 
         /// <summary>
@@ -114,8 +118,10 @@ namespace OnlineStore.Areas.Identity.Pages.Account
             public string? StreetAddress { get; set; }
             public string? City { get; set; }
             public string? PhoneNumber { get; set; }
+            public int? CompanyId { get; set; }
 
-
+            [ValidateNever]
+            public IEnumerable<SelectListItem> CompanyList { get; set; }
         }
 
 
@@ -136,7 +142,13 @@ namespace OnlineStore.Areas.Identity.Pages.Account
                 {
                     Text = i,
                     Value = i
+                }),
+                CompanyList = _unitOfWork.Company.GetAll().Select(c => new SelectListItem
+                {
+                    Text = c.Name,
+                    Value = c.Id.ToString()
                 })
+
             };
 
             ReturnUrl = returnUrl;
@@ -154,6 +166,11 @@ namespace OnlineStore.Areas.Identity.Pages.Account
                 user.StreetAddress = Input.StreetAddress;
                 user.PhoneNumber = Input.PhoneNumber;
                 user.Name = Input.Name;
+
+                if(Input.Role==SD.Role_Company)
+                {
+                    user.CompanyId = Input.CompanyId;
+                }
 
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
