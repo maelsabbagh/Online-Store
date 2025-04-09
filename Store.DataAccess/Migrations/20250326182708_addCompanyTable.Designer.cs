@@ -3,17 +3,20 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Store.DataAccess.Data;
 
 #nullable disable
 
-namespace Store.DataAccess.Data
+namespace Store.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250326182708_addCompanyTable")]
+    partial class addCompanyTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -297,24 +300,6 @@ namespace Store.DataAccess.Data
                     b.HasKey("Id");
 
                     b.ToTable("Companies");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "Tech solution",
-                            PhoneNumber = "010111111",
-                            PostalCode = "1234",
-                            StreetAddress = "123 tech city"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "solution",
-                            PhoneNumber = "01011122",
-                            PostalCode = "1235",
-                            StreetAddress = "124 tech city"
-                        });
                 });
 
             modelBuilder.Entity("Store.Models.Product", b =>
