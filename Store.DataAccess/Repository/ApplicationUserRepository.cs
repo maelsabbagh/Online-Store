@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Store.DataAccess.Repository
 {
-    class ApplicationUserRepository:Repository<ApplicationUser>,IApplicationUserRepository
+    public class ApplicationUserRepository:Repository<ApplicationUser>,IApplicationUserRepository
     {
         private readonly ApplicationDbContext _db;
         public ApplicationUserRepository(ApplicationDbContext dbContext) : base(dbContext)
