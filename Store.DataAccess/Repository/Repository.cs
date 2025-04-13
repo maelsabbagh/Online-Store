@@ -48,9 +48,11 @@ namespace Store.DataAccess.Repository
             
         }
 
-        public IEnumerable<T> GetAll(string? includeProperties = null)  // inlude properties will be comma separated string
+        public IEnumerable<T> GetAll(Expression<Func<T, bool>>? filter=null,string? includeProperties = null)  // inlude properties will be comma separated string
         {
             IQueryable<T> query = dbSet;
+            if(filter!=null)
+            query = dbSet.Where(filter);
 
             if(!string.IsNullOrEmpty(includeProperties)) // include properties exists
             {

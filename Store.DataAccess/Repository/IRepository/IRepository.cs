@@ -12,7 +12,7 @@ namespace Store.DataAccess.Repository.IRepository
         //T Category
 
         //GetAll
-        IEnumerable<T> GetAll(string? includeProperties=null); // include properties will a comma separated string
+        IEnumerable<T> GetAll(Expression<Func<T, bool>>? filter=null, string? includeProperties=null); // include properties will a comma separated string
 
         //Get
         T Get(Expression<Func<T,bool>>filter, string? includeProperties = null);

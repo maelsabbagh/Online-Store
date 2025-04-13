@@ -31,7 +31,7 @@ public class HomeController : Controller
         if (id == 0 || id == null) return NotFound();
         ShoppingCart cart = new()
         {
-            product = _unitOfWork.Product.Get(p => p.Id == id, includeProperties: "Category"),
+            Product = _unitOfWork.Product.Get(p => p.Id == id, includeProperties: "Category"),
             Count = 1,
             ProductId = (int)id,
             
