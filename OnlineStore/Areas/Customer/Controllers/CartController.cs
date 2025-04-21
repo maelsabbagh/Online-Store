@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Store.DataAccess.Repository.IRepository;
 using Store.Models;
 using Store.Models.ViewModels;
+using Store.Utility;
 using System.Security.Claims;
 
 namespace OnlineStore.Areas.Customer.Controllers
@@ -12,6 +13,7 @@ namespace OnlineStore.Areas.Customer.Controllers
     public class CartController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
+        [BindProperty]
         public ShoppingCartVM ShoppingCartVM { get; set; }
 
         public CartController(IUnitOfWork unitOfWork)
@@ -54,7 +56,6 @@ namespace OnlineStore.Areas.Customer.Controllers
             ShoppingCartVM.OrderHeader.PhoneNumber = ShoppingCartVM.OrderHeader.ApplicationUser.PhoneNumber;
             ShoppingCartVM.OrderHeader.StreetAddress = ShoppingCartVM.OrderHeader.ApplicationUser.StreetAddress;
             ShoppingCartVM.OrderHeader.City = ShoppingCartVM.OrderHeader.ApplicationUser.City;
-            ShoppingCartVM.OrderHeader.PostalCode = ShoppingCartVM.OrderHeader.ApplicationUser.PostalCode;
 
             foreach (var cart in ShoppingCartVM.ShoppingCartList)
             {
@@ -62,6 +63,73 @@ namespace OnlineStore.Areas.Customer.Controllers
                 ShoppingCartVM.OrderHeader.OrderTotal += (cart.Count * cart.Price);
             }
             return View(ShoppingCartVM);
+        }
+
+        [HttpPost]
+        [ActionName("Summary")]
+        // we use bindproperty for  public ShoppingCartVM ShoppingCartVM { get; set; } 
+        // summaryPost will receive this object "ShoppingCartVM"
+        public IActionResult SummaryPost()
+        {
+            var claimsIdentity = (ClaimsIdentity)User.Identity;
+            var userId = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            // shopping cart
+
+            // not all the attributes for ShoppingCartVM are posted so we will get it from the DB
+            ShoppingCartVM.ShoppingCartList = _unitOfWork.ShoppingCart.GetAll(s => s.ApplicationUserId == userId, includeProperties: "Product");
+
+
+            ShoppingCartVM.OrderHeader.OrderDate =DateTime.Now;
+            ShoppingCartVM.OrderHeader.ApplicationUserId = userId;
+            ApplicationUser appUser = _unitOfWork.ApplicationUser.Get(u => u.Id == userId);
+            
+
+
+            foreach (var cart in ShoppingCartVM.ShoppingCartList)
+            {
+                cart.Price = GetPriceBasedOnQuantity(cart);
+                ShoppingCartVM.OrderHeader.OrderTotal += (cart.Count * cart.Price);
+            }
+
+            if(appUser.CompanyId.GetValueOrDefault()==0) //not company user
+            {
+                ShoppingCartVM.OrderHeader.PaymentStatus = SD.PaymentStatusPending;
+                ShoppingCartVM.OrderHeader.OrderStatus = SD.StatusPending;
+            }
+            else // company user
+            {
+                ShoppingCartVM.OrderHeader.PaymentStatus = SD.PaymentStatusDelayedPayment;
+                ShoppingCartVM.OrderHeader.OrderStatus = SD.StatusApproved;
+
+            }
+            _unitOfWork.OrderHeader.Add(ShoppingCartVM.OrderHeader);
+            _unitOfWork.Save();
+
+            foreach(var cart in ShoppingCartVM.ShoppingCartList)
+            {
+                OrderDetail orderDetail = new OrderDetail()
+                {
+                    ProductId = cart.ProductId,
+                    OrderHeaderId = ShoppingCartVM.OrderHeader.Id,
+                    Price = cart.Price,
+                    Count = cart.Count
+                };
+                _unitOfWork.OrderDetail.Add(orderDetail);
+                _unitOfWork.Save();
+            }
+
+            if (appUser.CompanyId.GetValueOrDefault() == 0) //not company user
+            {
+                // payment
+                // stripe
+            }
+            return RedirectToAction(nameof(OrderConfirmation),new { orderId = ShoppingCartVM.OrderHeader.Id});
+        }
+
+        public IActionResult OrderConfirmation(int orderId)
+        {
+            return View(orderId);
         }
         public IActionResult plus(int cartID)
         {
