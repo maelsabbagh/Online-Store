@@ -127,7 +127,7 @@ namespace OnlineStore.Areas.Admin.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            var productList = _unitOfWork.Product.GetAll(includeProperties: "Category");
+            var productList = _unitOfWork.Product.GetAll(includeProperties: "Category").ToList();
             return Json(new { data = productList });
         }
 
