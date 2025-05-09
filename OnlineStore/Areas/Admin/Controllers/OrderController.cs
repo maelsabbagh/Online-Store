@@ -1,16 +1,19 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.VisualBasic;
 using Store.DataAccess.Repository.IRepository;
 using Store.Models;
 using Store.Models.ViewModels;
 using Store.Utility;
 using Stripe.Climate;
+using System;
 using System.Diagnostics;
 using System.Security.Claims;
 
 namespace OnlineStore.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize]
     public class OrderController : Controller
     {
         [BindProperty]
@@ -58,6 +61,43 @@ namespace OnlineStore.Areas.Admin.Controllers
 
 
             return RedirectToAction(nameof(Details), new { orderId = orderHeaderFromDb.Id });
+        }
+
+        [HttpPost]
+        [Authorize(Roles = SD.Role_Admin + "," + SD.Role_Employee)]
+        public IActionResult StartProcessing()
+        {
+            _unitOfWork.OrderHeader.UpdateStatus(orderVM.OrderHeader.Id, SD.StatusInProcess);
+            _unitOfWork.Save();
+            TempData["Success"] = "Order Details Updated Successfully.";
+
+            return RedirectToAction(nameof(Details), new { orderId = orderVM.OrderHeader.Id });
+
+
+        }
+
+        [HttpPost]
+        [Authorize(Roles = SD.Role_Admin + "," + SD.Role_Employee)]
+        public IActionResult shipOrder()
+        {
+            var orderHeader = _unitOfWork.OrderHeader.Get(u => u.Id == orderVM.OrderHeader.Id);
+            orderHeader.TrackingNumber = orderVM.OrderHeader.TrackingNumber;
+            orderHeader.Carrier = orderVM.OrderHeader.Carrier;
+            orderHeader.OrderStatus = SD.StatusShipped;
+            orderHeader.ShippingDate = DateTime.Now;
+            if (orderHeader.PaymentStatus == SD.PaymentStatusDelayedPayment)
+            {
+                orderHeader.PaymentDueDate = DateOnly.FromDateTime(DateTime.Today).AddDays(30);
+            }
+
+            _unitOfWork.OrderHeader.Update(orderHeader);
+            _unitOfWork.Save();
+            TempData["Success"] = "Order Shipped Successfully.";
+
+
+            return RedirectToAction(nameof(Details), new { orderId = orderVM.OrderHeader.Id });
+
+
         }
         #region API calls
         [HttpGet]
