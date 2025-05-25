@@ -5,6 +5,7 @@ using Store.DataAccess.Repository.IRepository;
 using Store.Models;
 using Store.Models.ViewModels;
 using Store.Utility;
+using Stripe;
 using Stripe.Climate;
 using System;
 using System.Diagnostics;
@@ -99,6 +100,36 @@ namespace OnlineStore.Areas.Admin.Controllers
 
 
         }
+        [HttpPost]
+        [Authorize(Roles = SD.Role_Admin + "," + SD.Role_Employee)]
+        public IActionResult CancelOrder()
+        {
+
+            var orderHeader = _unitOfWork.OrderHeader.Get(u => u.Id == orderVM.OrderHeader.Id);
+
+            if (orderHeader.PaymentStatus == SD.PaymentStatusApproved)
+            {
+                var options = new RefundCreateOptions
+                {
+                    Reason = RefundReasons.RequestedByCustomer,
+                    PaymentIntent = orderHeader.PaymentIntentId
+                };
+
+                var service = new RefundService();
+                Refund refund = service.Create(options);
+
+                _unitOfWork.OrderHeader.UpdateStatus(orderHeader.Id, SD.StatusCancelled, SD.StatusRefunded);
+            }
+            else
+            {
+                _unitOfWork.OrderHeader.UpdateStatus(orderHeader.Id, SD.StatusCancelled, SD.StatusCancelled);
+            }
+            _unitOfWork.Save();
+            TempData["Success"] = "Order Cancelled Successfully.";
+            return RedirectToAction(nameof(Details), new { orderId = orderVM.OrderHeader.Id });
+
+        }
+
         #region API calls
         [HttpGet]
         public IActionResult GetAll(string status)
