@@ -58,6 +58,7 @@ The project emphasizes:
   - Multi-step checkout flow
   - Shipping address management
   - Order review and confirmation
+  - use stripe to make payment
 
 ### Admin Features
 - **Product Management**
