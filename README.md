@@ -76,10 +76,6 @@ The project emphasizes:
   - Role-based access control
   - User activity monitoring
 
-- **Dashboard**
-  - Sales analytics and reporting
-  - Revenue tracking
-  - Popular products insights
 
 ## 🛠️ Technologies Used
 
@@ -282,13 +278,6 @@ Contributions are what make the open-source community an amazing place to learn,
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-
-## 📞 Contact
-
-**Project Maintainer**: Mohamed Elsabbagh
-
-- GitHub: [@maelsabbagh](https://github.com/maelsabbagh)
-- Project Link: [https://github.com/maelsabbagh/Online-Store](https://github.com/maelsabbagh/Online-Store)
 
 ---
 
